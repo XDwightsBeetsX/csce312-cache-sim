@@ -16,3 +16,7 @@ git clone https://github.com/XDwightsBeetsX/csce312-cache-sim
 
 | command | flags | description |
 | :-- | :-: | :-- |
+
+## Documentation with [Doxygen](https://www.doxygen.nl/manual/docblocks.html#pythonblocks)
+
+- comments -> documentation
