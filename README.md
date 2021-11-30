@@ -6,7 +6,7 @@ Work for TAMU CSCE 312 Kebo Project - Cache Simulator
 - John Gutierrez
 - Cameron Herring
 
-# Usage
+## Usage
 
 ```shell
 git clone https://github.com/XDwightsBeetsX/csce312-cache-sim
