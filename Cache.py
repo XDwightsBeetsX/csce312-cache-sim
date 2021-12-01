@@ -28,7 +28,7 @@ class Cache(object):
         self.b = b
         self.CacheHits = 0
         self.CacheMisses = 0
-        # TODO find m
+        # TODO find m and t
         # self.t = m - (s + b)
 
         # TODO is this how to initialize Contents?
@@ -152,7 +152,13 @@ class Cache(object):
 
     
     def cache_dump(self):
-        pass
+        with open("cache.txt", 'a') as cacheFile:
+            for set in range(self.S):
+                for line in range(self.E):
+                    for i in range(self.B):
+                        # not sure how indexing past the valid and tag parts goes...
+                        cacheFile.write(self.Contents[set][line][1+self.t+i] + " ")
+                cacheFile.write('\n')
 
     
     def memory_view(self):
