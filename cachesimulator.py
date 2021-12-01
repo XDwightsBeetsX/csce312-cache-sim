@@ -8,8 +8,7 @@
 
 
 import sys
-
-# from menu import simulator_menu
+# from Cache import Cache
 
 
 if __name__ == "__main__":
@@ -22,12 +21,19 @@ if __name__ == "__main__":
         quit()
     
     # 1. Initialize the physical memory
-    # + byte-addressable
     print("*** Welcome to the cache simulator ***")
     init = input("initialize the RAM:\n").split(" ")  # expected command is 'init-ram 0x# 0x#'
     ramStart, ramEnd = int(init[1], 0), int(init[2], 0)
-    cacheSize = ramEnd - ramStart + 1
-    print(cacheSize)
+    ramSize = ramEnd - ramStart + 1
 
+    # init RAM by reading first bytes into list
+    Ram = []
+    with open(filename, "r+") as inputFile:
+        lines = inputFile.read().splitlines()
+        Ram = lines[0:ramSize]
+    
+    print("RAM successfully initiated!")
+
+    cache = Cache()
     # simulator_menu()
     # [set][line][char]
