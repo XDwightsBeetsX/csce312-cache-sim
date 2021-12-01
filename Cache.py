@@ -129,6 +129,7 @@ class Cache(object):
         clears the cache contents, replacing all data with '0's
         """
         self.Contents = [[[0] * self.B] * self.E] * self.S
+        print("cache_cleared")
     
 
     def cache_view(self):
@@ -152,6 +153,28 @@ class Cache(object):
     
     def cache_dump(self):
         pass
+
+    
+    def memory_view(self):
+        """
+        Displays the RAM content and status
+        """
+        print(f"memory_size:{len(self.RAM)}")
+        
+        print("memory_content:")
+        print("address:data")
+        
+        # TODO this is just a quick thing from the sample view
+        # im not sure ab the rowLength
+        start = 0x00
+        rowLength = 8
+        for r in range(len(self.RAM)):
+            print(f"{start}:", end="")
+            for i in range(rowLength):
+                print(self.RAM[r*rowLength + i], end=" ")
+            
+            start += hex(rowLength)
+            print()
 
 
     def memory_dump(self):
