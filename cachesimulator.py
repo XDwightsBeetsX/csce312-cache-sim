@@ -6,39 +6,17 @@
 # Description:
 # Implementing a cache simulator
 
-def simulator_menu():
-    command = "n/a"
-    while (command != "quit"):
-        print("*** Cache simulator menu ***")
-        print("type one command: ")
-        print("1. cache-read")
-        print("2. cache-write")
-        print("3. cache-flush")
-        print("4. cache-view")
-        print("5. memory-view")
-        print("6. cache-dump")
-        print("7. memory-dump")
-        print("8. quit")
-        print("****************************")
-        command = input("")
-        if (command == "cache-read"):
 
-        elif (command == "cache-write"):
+import sys
 
-        elif (command == "cache-flush"):
-        
-        elif (command == "cache-view"):
-
-        elif (command == "memory-view"):
-
-        elif (command == "cache-dump"):
-
-        elif (command == "memory-dump"):
-
-        else:
-            if (command != "quit"):
-                print("Please type a command from the menu.")
+from .menu import simulator_menu
 
 
-def main():
-    simulator_menu()
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    filename = args[0].strip()
+
+    print("*** Welcome to the cache simulator ***")
+    init = input("initialize the RAM:\n")
+
+    # simulator_menu()
