@@ -8,7 +8,7 @@
 
 
 import sys
-# from Cache import Cache
+from Cache import Cache
 
 
 if __name__ == "__main__":

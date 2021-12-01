@@ -1,0 +1,3 @@
+# ignore these files from git version control...
+*.vscode
+__pycache__
