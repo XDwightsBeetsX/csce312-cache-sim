@@ -27,13 +27,11 @@ if __name__ == "__main__":
     ramSize = ramEnd - ramStart + 1
 
     # init RAM by reading first bytes into list
-    Ram = []
+    ram = []
     with open(filename, "r+") as inputFile:
         lines = inputFile.read().splitlines()
-        Ram = lines[0:ramSize]
+        ram = lines[0:ramSize]
     
     print("RAM successfully initiated!")
-
-    cache = Cache()
-    # simulator_menu()
-    # [set][line][char]
+    
+    cache = Cache(ram)

@@ -3,7 +3,7 @@ from math import log
 
 
 class Cache(object):
-    def __init__(self):
+    def __init__(self, ram):
         print("configure the cache:")
         cacheSize = int(input("cache size: "))
         blockSize = int(input("data block size: "))
@@ -16,6 +16,7 @@ class Cache(object):
         s = int(log(cacheSize, 2))
         b = int(log(blockSize, 2))
 
+        self.RAM = ram
         self.ReplacementPolicy = replacementPolicy
         self.WriteHitPolicy = writeHitPolicy
         self.WriteMissPolicy = writeMissPolicy
@@ -31,14 +32,12 @@ class Cache(object):
         # TODO is this how to initialize Contents?
         self.Contents = [[[]]]  # updated below
         print("cache successfully configured!")
-
-    
-    def cache_flush(self):
-        self.Contents = [[[0] * self.B] * self.E] * self.S
-        print(self.Contents)
     
 
     def menu(self):
+        """
+        This is like the game loop or whatever, but is not yet called.
+        """
         command = ""
         while (command != "quit"):
             print("*** Cache simulator menu ***")
@@ -70,3 +69,42 @@ class Cache(object):
                 pass
             else:
                 print("Please type a command from the menu.")
+        quit()
+
+
+    def cache_read(self):
+        pass
+
+
+    def cache_write(self):
+        pass
+
+    
+    def cache_flush(self):
+        """
+        clears the cache contents, replacing all data with '0's
+        """
+        self.Contents = [[[0] * self.B] * self.E] * self.S
+    
+
+    def cache_view(self):
+        pass
+
+    
+    def cache_dump(self):
+        pass
+
+
+    def memory_dump(self):
+        """
+        writes the current RAM data to the file 'ram.txt'
+        """
+        # will create or overrite the 'ram.txt' file
+        with open("ram.txt", 'a') as ramWrite:
+            for i, r in enumerate(self.RAM):
+                # cast numbers to strings and write
+                ramWrite.write(f"{str(r)}")
+                
+                # no newline at end of file
+                if i < len(self.RAM):
+                    ramWrite.write('\n')
