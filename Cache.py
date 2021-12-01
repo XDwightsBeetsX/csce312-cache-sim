@@ -32,10 +32,12 @@ class Cache(object):
         self.Contents = [[[]]]  # updated below
         print("cache successfully configured!")
 
-    def clear_cache(self):
-        self.Contents = [[[0] * self.b] * self.E] * self.S
+    
+    def cache_flush(self):
+        self.Contents = [[[0] * self.B] * self.E] * self.S
         print(self.Contents)
     
+
     def menu(self):
         command = ""
         while (command != "quit"):
@@ -52,20 +54,19 @@ class Cache(object):
             print("****************************")
             
             command = input("").strip()
-
             if (command == "cache-read"):
-
+                pass
             elif (command == "cache-write"):
-
+                pass
             elif (command == "cache-flush"):
-            
+                self.cache_flush()
             elif (command == "cache-view"):
-
+                pass
             elif (command == "memory-view"):
-
+                pass
             elif (command == "cache-dump"):
-
+                pass
             elif (command == "memory-dump"):
-
+                pass
             else:
                 print("Please type a command from the menu.")
