@@ -26,6 +26,8 @@ class Cache(object):
         self.E = associativity
         self.s = s
         self.b = b
+        self.CacheHits = 0
+        self.CacheMisses = 0
         # TODO find m
         # self.t = m - (s + b)
 
@@ -52,9 +54,18 @@ class Cache(object):
             print("8. quit")
             print("****************************")
             
-            command = input("").strip()
+            # read input
+            # if a command was correctly input, 
+            #   use the next arguments to execute the method
+            c = input("").split()
+            command = c[0].strip()
+            args = []
+            for c in c[1:]:
+                args.append(c.strip())
+            
             if (command == "cache-read"):
-                pass
+                binaryCommand = bin(args[0]).replace('0b', '')
+                self.cache_read(binaryCommand)
             elif (command == "cache-write"):
                 pass
             elif (command == "cache-flush"):
@@ -72,8 +83,41 @@ class Cache(object):
         quit()
 
 
-    def cache_read(self):
-        pass
+    def cache_read(self, binaryCommandStr):
+        """
+        Determines if the binaryCommandStr results in a hit or miss in the cache
+        
+        Displays intermediate info such as set and tag numbers
+        """
+        readTag = int(binaryCommandStr[0:self.t])
+        readSet = int(binaryCommandStr[self.t:-self.b])
+        readOffset = int(binaryCommandStr[-self.b:])
+
+        value = '-1'  # see TODO below
+        isHit = False
+        try:
+            # see if cache hit
+            # searching Contents will throw error if indexing is wrong
+            value = self.Contents[readSet][readTag][readOffset]
+            isHit = True
+            self.CacheHits += 1
+        except Exception:
+            # cache miss
+            self.CacheMisses += 1
+
+        print(f"set:{readSet}")
+        print(f"tag:{readTag}")
+        if isHit:
+            print(f"hit:yes")
+            print(f"eviction_policy:-1")
+            print(f"ram_address:-1")
+            print(f"data:{value}")
+        else:
+            print(f"hit:no")
+            print(f"eviction_line:{self.ReplacementPolicy}")
+            print(f"ram_address:{hex(int(binaryCommandStr))}")
+            # TODO: idk what we put in for data if theres a cache miss
+            print(f"data:")
 
 
     def cache_write(self):
@@ -88,7 +132,22 @@ class Cache(object):
     
 
     def cache_view(self):
-        pass
+        print(f"cache_size:{self.C}")
+        print(f"data_block_size:{self.B}")
+        print(f"associativity:{self.E}")
+        print(f"replacement_policy:{self.ReplacementPolicy}")
+        print(f"write_hit_policy:{self.WriteHitPolicy}")
+        print(f"write_miss_policy:{self.WriteMissPolicy}")
+        print(f"number_of_cache_hits:{self.CacheHits}")
+        print(f"number_of_cache_misses:{self.CacheMisses}")
+        
+        print("cache_content:")
+        for s in len(self.Contents):
+            for line in self.Contents[s]:
+                # TODO idk how we add valid/dirty bits
+                # print(validBit, dirtyBit, line, end=" ")
+                pass
+            print()
 
     
     def cache_dump(self):

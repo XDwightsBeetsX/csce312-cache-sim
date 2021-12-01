@@ -1,3 +1,5 @@
 # ignore these files from git version control...
 *.vscode
+*.DS_Store
+
 __pycache__
