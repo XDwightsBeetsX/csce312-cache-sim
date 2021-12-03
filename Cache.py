@@ -33,6 +33,21 @@ class Cache(object):
 
         # TODO is this how to initialize Contents?
         self.Contents = [[[]]]  # updated below
+
+        for i in range((len(self.S))): #Not totally sure if this is correct. But it is how I understood it
+            self.Contents.append([])
+            for f in range((len(self.E)))
+                self.Contents[i].append([])
+                for g in range((len(self.B+4)))
+                    if g == 0:
+                        self.Contents[i][f].append("0") # This is the Valid bit
+                    elif g == 1:
+                        self.Contents[i][f].append("0") # This is the Dirty Bit
+                    elif g == 2:
+                        self.Contents[i][f].append("0") # This is the LRU/LFU bit
+                    else:
+                        self.Contents[i][f].append("00") # Tag and Data Amount
+
         print("cache successfully configured!")
     
 
