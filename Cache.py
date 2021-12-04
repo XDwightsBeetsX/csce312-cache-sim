@@ -30,26 +30,31 @@ class Cache(object):
         self.CacheMisses = 0
         # TODO find m and t
         # self.t = m - (s + b)
-
-        # TODO is this how to initialize Contents?
-        self.Contents = [[[]]]  # updated below
-
-        for i in range((len(self.S))): #Not totally sure if this is correct. But it is how I understood it
-            self.Contents.append([])
-            for f in range((len(self.E)))
-                self.Contents[i].append([])
-                for g in range((len(self.B+4)))
-                    if g == 0:
-                        self.Contents[i][f].append("0") # This is the Valid bit
-                    elif g == 1:
-                        self.Contents[i][f].append("0") # This is the Dirty Bit
-                    elif g == 2:
-                        self.Contents[i][f].append("0") # This is the LRU/LFU bit
-                    else:
-                        self.Contents[i][f].append("00") # Tag and Data Amount
+        self.Contents = self.getEmptyContents()
 
         print("cache successfully configured!")
     
+
+    def getEmptyContents(self):
+        c = [[[]]]
+        for i in range(self.S): #Not totally sure if this is correct. But it is how I understood it
+            c.append([])
+            for f in range(self.E):
+                c.append([])
+                for g in range(self.B + 3):
+                    if g == 0:
+                        c[i][f].append("0") # This is the Valid bit
+                    elif g == 1:
+                        c[i][f].append("0") # This is the Dirty Bit
+                    elif g == 2:
+                        c[i][f].append("0") # This is the LRU/LFU bit
+                        # TODO issues w/ rep policy here?
+                        # 1 -> Random Replacement
+                        # 2 -> Least Recently Used
+                    else:
+                        c[i][f].append("00") # Tag and Data Amount (hex)
+        return c
+
 
     def menu(self):
         """
@@ -82,17 +87,19 @@ class Cache(object):
                 binaryCommand = bin(args[0]).replace('0b', '')
                 self.cache_read(binaryCommand)
             elif (command == "cache-write"):
-                pass
+                binaryCommand = bin(args[0]).replace('0b', '')
+                dataToWrite = args[1]
+                self.cache_write(binaryCommand, dataToWrite)
             elif (command == "cache-flush"):
                 self.cache_flush()
             elif (command == "cache-view"):
-                pass
+                self.cache_view()
             elif (command == "memory-view"):
-                pass
+                self.memory_view()
             elif (command == "cache-dump"):
-                pass
+                self.cache_dump()
             elif (command == "memory-dump"):
-                pass
+                self.memory_dump()
             else:
                 print("Please type a command from the menu.")
         quit()
@@ -130,20 +137,70 @@ class Cache(object):
         else:
             print(f"hit:no")
             print(f"eviction_line:{self.ReplacementPolicy}")
-            print(f"ram_address:{hex(int(binaryCommandStr))}")
-            # TODO: idk what we put in for data if theres a cache miss
-            print(f"data:")
+            
+            ramAddy = hex(int(binaryCommandStr))
+            print(f"ram_address:{ramAddy}")
+            
+            ramIndex = int(ramAddy) / 8
+            ramData = self.RAM[ramIndex]
+            print(f"data:{ramData}")
 
 
-    def cache_write(self):
-        pass
+    def cache_write(self, binaryCommand, dataToWrite):
+        # binaryCommand is BITS: [tag, set, offset]
+        cacheTag = binaryCommand[4:self.t]
+        cacheSetIndex = binaryCommand[4+self.t:4+self.t+self.s]
+        
+        isHit = False
+        dirtyBit = 1
+        for line in self.Contents[cacheSetIndex]:
+            if line[4:self.t] == str(hex(int(cacheTag))):
+                foundLine = line[4:self.t]
+                if foundLine[0] == 1:               # valid bit check
+                    isHit = True
+                    dirtyBit = foundLine[1]
+
+                    # check the WriteHitPolicy to see if data gets written
+                    if self.WriteHitPolicy == 1:
+                        foundLine[4:] = dataToWrite
+                    else:
+                        foundLine[1] = 1            # set dirty bit to 1
+                else:
+                    # ==========================
+                    # TODO
+                    # ==========================
+                    if self.WriteHitPolicy == 1:    # random
+                        pass
+                    elif self.WriteHitPolicy == 2:  # least recently
+                        pass
+                    else:
+                        pass
+                        
+        
+        print(f"set:{cacheSetIndex}")
+        print(f"tag:{cacheTag}")
+
+        if isHit:
+            self.CacheHits += 1
+            print("write_hit:yes")
+            print("eviction_line:-1")
+            print("ram_address:-1")
+
+        else:
+            self.CacheMisses += 1
+            print("write_hit:no")
+            print(f"eviction_line:{evictionLine}")
+            print(f"ram_address:{str(hex(binaryCommand))}")
+        
+        print(f"data:{dataToWrite}")
+        print(f"dirty_bit:{dirtyBit}")
 
     
     def cache_flush(self):
         """
         clears the cache contents, replacing all data with '0's
         """
-        self.Contents = [[[0] * self.B] * self.E] * self.S
+        self.Contents = self.getEmptyContents()
         print("cache_cleared")
     
 
@@ -158,21 +215,22 @@ class Cache(object):
         print(f"number_of_cache_misses:{self.CacheMisses}")
         
         print("cache_content:")
-        for s in len(self.Contents):
-            for line in self.Contents[s]:
-                # TODO idk how we add valid/dirty bits
-                # print(validBit, dirtyBit, line, end=" ")
-                pass
-            print()
+        
+        # similar to getEmptyContents
+        for i in range(self.S):
+            for f in range(self.E):
+                for g in range(self.B + 3):
+                    print(self.Contents[i][f][g], end=" ")
+                print()
+                
 
-    
     def cache_dump(self):
         with open("cache.txt", 'a') as cacheFile:
             for set in range(self.S):
                 for line in range(self.E):
-                    for i in range(self.B):
+                    for i in range(self.B + 3):
                         # not sure how indexing past the valid and tag parts goes...
-                        cacheFile.write(self.Contents[set][line][1+self.t+i] + " ")
+                        cacheFile.write(self.Contents[set][line][i + 3] + " ")
                 cacheFile.write('\n')
 
     
@@ -193,7 +251,6 @@ class Cache(object):
             print(f"{start}:", end="")
             for i in range(rowLength):
                 print(self.RAM[r*rowLength + i], end=" ")
-            
             start += hex(rowLength)
             print()
 
