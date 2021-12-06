@@ -43,11 +43,9 @@ class Cache(object):
     
 
     def getEmptyContents(self):
-        c = [[[0] * self.B] * self.E] * self.S
-        print(c)
         for s in range(self.S):             # Not totally sure if this is correct. But it is how I understood it
             for e in range(self.E):
-                for i in range(self.B):
+                for i in range(self.B + 4):
                     if i == 0:
                         c[s][e][i] = "0"    # This is the Valid bit
                     elif i == 1:
@@ -282,7 +280,7 @@ class Cache(object):
         with open("cache.txt", 'a') as cacheFile:
             for set in range(self.S):
                 for line in range(self.E):
-                    for i in range(self.B + 4):
+                    for i in range(self.B):
                         # not sure how indexing past the valid and tag parts goes...
                         cacheFile.write(self.Contents[set][line][i + 4] + " ")
                 cacheFile.write('\n')
