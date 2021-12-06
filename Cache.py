@@ -170,11 +170,46 @@ class Cache(object):
                     # TODO
                     # ==========================
                     if self.WriteHitPolicy == 1:    # random
-                        pass
-                    elif self.WriteHitPolicy == 2:  # least recently
-                        pass
+                        count = 0
+                        for i in range(self.E):
+                            if self.Contents[cacheSetIndex][i][0] == "1": # check to see if lines are valid
+                                count += 1
+                            if count != 4: # if all lines aren't valid, we remove those lines
+                                while True:
+                                    eviction_line = random.randint(1, E)
+                                    if (self.Contents[cacheSetIndex][eviction_line-1][0] == "0"):
+                                        break
+                            else:
+                                eviction_line = random.randint(1, E) # else if all lines are valid, we remove one at random
+                    elif self.WriteHitPolicy == 2:  # least recently used
+                        if self.E == "1":
+                            eviction_line = 1
+                        elif self.E == "2":
+                            if self.Contents[cacheSetIndex][0][2] == "0": # TODO String or Int compare?
+                                eviction_line = 1
+                                self.Contents[cacheSetIndex][0][2] = "1"
+                            else: 
+                                eviction_line = 2
+                                self.Contents[cacheSetIndex][0][2] = "0"
+                        else: # Goes through checking which bit is LFU and sets the eviction line accordingly
+                            if self.Contents[cacheSetIndex][0][2] == "0":
+                                eviction_line = 1
+                                self.Contents[cacheSetIndex][0][2] = "1"
+                                self.Contents[cacheSetIndex][1][2] = "0"
+                            elif self.Contents[cacheSetIndex][1][2] == "0":
+                                eviction_line = 2
+                                self.Contents[cacheSetIndex][1][2] = "1"
+                                self.Contents[cacheSetIndex][2][2] = "0"
+                            elif self.Contents[cacheSetIndex][2][2] == "0":
+                                eviction_line = 3
+                                self.Contents[cacheSetIndex][2][2] = "1"
+                                self.Contents[cacheSetIndex][3][2] = "0"
+                            else: 
+                                eviction_line = 4
+                                self.Contents[cacheSetIndex][3][2] = "1"
+                                self.Contents[cacheSetIndex][0][2] = "0"
                     else:
-                        pass
+                        pass  
                         
         
         print(f"set:{cacheSetIndex}")
