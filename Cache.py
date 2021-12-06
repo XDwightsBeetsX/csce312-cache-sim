@@ -246,12 +246,24 @@ class Cache(object):
     
 
     def cache_view(self):
+        if self.ReplacementPolicy == 1:
+            replacementString = "random_replacement"
+        else:
+            replacementString = "least_recently_used"
+        if self.WriteHitPolicy == 1:
+            writeHitString = "write_though"
+        else:
+            writeHitString = "write_back"
+        if self.WriteMissPolicy == 1:
+            writeMissString = "write_allocate"
+        else:
+            writeMissString = "no_write_allocate"
         print(f"cache_size:{self.C}")
         print(f"data_block_size:{self.B}")
         print(f"associativity:{self.E}")
-        print(f"replacement_policy:{self.ReplacementPolicy}")
-        print(f"write_hit_policy:{self.WriteHitPolicy}")
-        print(f"write_miss_policy:{self.WriteMissPolicy}")
+        print(f"replacement_policy:{replacementString}")
+        print(f"write_hit_policy:{writeHitString}")
+        print(f"write_miss_policy:{writeMissString}")
         print(f"number_of_cache_hits:{self.CacheHits}")
         print(f"number_of_cache_misses:{self.CacheMisses}")
         
@@ -260,8 +272,9 @@ class Cache(object):
         # similar to getEmptyContents
         for i in range(self.S):
             for f in range(self.E):
-                for g in range(self.B + 3):
-                    print(self.Contents[i][f][g], end=" ")
+                for g in range(self.B + 4):
+                    if g != 2: # We need this to skip the LFU index bc we don't print it
+                        print(self.Contents[i][f][g], end=" ")
                 print()
                 
 
@@ -269,9 +282,9 @@ class Cache(object):
         with open("cache.txt", 'a') as cacheFile:
             for set in range(self.S):
                 for line in range(self.E):
-                    for i in range(self.B + 3):
+                    for i in range(self.B + 4):
                         # not sure how indexing past the valid and tag parts goes...
-                        cacheFile.write(self.Contents[set][line][i + 3] + " ")
+                        cacheFile.write(self.Contents[set][line][i + 4] + " ")
                 cacheFile.write('\n')
 
     
