@@ -31,7 +31,7 @@ class Cache(object):
         
         # TODO find m and t
         m = len(ram)
-        self.m = m
+        self.m = 8
         self.t = m - (s + b)
 
         self.CacheHits = 0
