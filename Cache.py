@@ -17,42 +17,48 @@ class Cache(object):
         b = int(log(blockSize, 2))
 
         self.RAM = ram
+        
         self.ReplacementPolicy = replacementPolicy
         self.WriteHitPolicy = writeHitPolicy
         self.WriteMissPolicy = writeMissPolicy
+        
         self.S = S
         self.C = cacheSize
         self.B = blockSize
         self.E = associativity
         self.s = s
         self.b = b
+        
+        # TODO find m and t
+        m = len(ram)
+        self.m = m
+        self.t = m - (s + b)
+
         self.CacheHits = 0
         self.CacheMisses = 0
-        # TODO find m and t
-        # self.t = m - (s + b)
+
         self.Contents = self.getEmptyContents()
 
         print("cache successfully configured!")
     
 
     def getEmptyContents(self):
-        c = [[[]]]
-        for i in range(self.S): #Not totally sure if this is correct. But it is how I understood it
-            c.append([])
-            for f in range(self.E):
-                c.append([])
-                for g in range(self.B + 3):
-                    if g == 0:
-                        c[i][f].append("0") # This is the Valid bit
-                    elif g == 1:
-                        c[i][f].append("0") # This is the Dirty Bit
-                    elif g == 2:
-                        c[i][f].append("0") # This is the LRU/LFU bit
+        c = [[[0] * self.B] * self.E] * self.S
+        print(c)
+        for s in range(self.S):             # Not totally sure if this is correct. But it is how I understood it
+            for e in range(self.E):
+                for i in range(self.B):
+                    if i == 0:
+                        c[s][e][i] = "0"    # This is the Valid bit
+                    elif i == 1:
+                        c[s][e][i] = "0"    # This is the Dirty Bit
+                    elif i == 2:
+                        c[s][e][i] = "0"    # This is the LRU/LFU bit
                         # TODO issues w/ rep policy here?
                         # 1 -> Random Replacement
                         # 2 -> Least Recently Used
                     else:
-                        c[i][f].append("00") # Tag and Data Amount (hex)
+                        c[s][e][i] = "00" # Tag and Data Amount (hex)
         return c
 
 
