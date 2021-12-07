@@ -118,7 +118,7 @@ class Cache(object):
                 self.cache_dump()
             elif (command == "memory-dump"):
                 self.memory_dump()
-            elif (command == "quit")
+            elif (command == "quit"):
                 quit()
             else:
                 print("Please type a command from the menu.")
