@@ -1,6 +1,5 @@
 
 from math import log
-import numpy as np
 
 
 class Cache(object):
@@ -110,11 +109,11 @@ class Cache(object):
             
             if (command == "cache-read"):
                 address = args[0]
-                self.cache_read(address)
+                self.cache_read2(address)
             elif (command == "cache-write"):
                 binaryCommand = args[0]
                 dataToWrite = args[1]
-                self.cache_write(binaryCommand, dataToWrite)
+                self.cache_write2(binaryCommand, dataToWrite)
             elif (command == "cache-flush"):
                 self.cache_flush()
             elif (command == "cache-view"):
@@ -130,10 +129,7 @@ class Cache(object):
             else:
                 print("Please type a command from the menu.")
 
-<<<<<<< HEAD
-=======
 
->>>>>>> bc25e96c476402d0f88a684cdc23f7595d4a0636
     def cache_hit(self, address):
         isHit = False
         binaryAddress = (bin(int(address[2:], 16))[2:].zfill(8)) # Converts address into 8 bit binary address
@@ -164,16 +160,13 @@ class Cache(object):
                     break
         return isHit
 
-<<<<<<< HEAD
-=======
 
->>>>>>> bc25e96c476402d0f88a684cdc23f7595d4a0636
     def cache_read2(self, address):
         binaryAddress = (bin(int(address[2:], 16))[2:].zfill(8)) # Converts address into binary address
         binaryOffset = binaryAddress[self.t + self.s:]
         tag = binaryAddress[:self.t]
 
-        if self.cache_hit(self, address):
+        if self.cache_hit(address):
             self.CacheHits += 1
             print(f"hit:yes")
             print(f"eviction_policy:-1")
@@ -233,16 +226,13 @@ class Cache(object):
             print(f"ram_address:{address}")
             print("data:0x" + self.RAM[address])
 
-<<<<<<< HEAD
-=======
 
->>>>>>> bc25e96c476402d0f88a684cdc23f7595d4a0636
     def cache_write2(self, address, dataToWrite):
         binaryAddress = (bin(int(address[2:], 16))[2:].zfill(8)) # Converts address into binary address
         binaryOffset = binaryAddress[self.t + self.s:]
         tag = binaryAddress[:self.t]
 
-        if self.cache_hit(self, address):
+        if self.cache_hit(address):
             self.CacheHits += 1
             print(f"hit:yes")
             print(f"eviction_policy:-1")
