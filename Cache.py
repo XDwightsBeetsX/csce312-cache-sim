@@ -35,10 +35,6 @@ class Cache(object):
 
         self.CacheHits = 0
         self.CacheMisses = 0
-        self.line0LFUcount = 0
-        self.line1LFUcount = 0
-        self.line2LFUcount = 0
-        self.line3LFUcount = 0
         self.d_e = 0
         self.si = 0
         self.Contents = []
@@ -149,7 +145,7 @@ class Cache(object):
         
         for e in range(self.E):
             if tag != "":
-                if (str(self.Contents[si][e][0] == "1") and (str(self.Contents[si][e][3]).upper() == (str(hex(int(tag, 2)))[2:].zfill(2)).upper())):
+                if (str(self.Contents[self.si][e][0] == "1") and (str(self.Contents[self.si][e][3]).upper() == (str(hex(int(tag, 2)))[2:].zfill(2)).upper())):
                     self.d_e = e
                     isHit = True
                     break
@@ -175,7 +171,7 @@ class Cache(object):
         else: 
             self.CacheMisses += 1
             print("hit:no")
-            if self.replacement_policy == "1":
+            if self.ReplacementPolicy == "1":
                 count = 0
                 for i in range(self.E):
                     if self.Contents[si][i][0] == "1": # check to see if lines are valid
@@ -247,7 +243,7 @@ class Cache(object):
         else: 
             self.CacheMisses += 1
             print("write_hit:no")
-            if self.replacement_policy == "1":
+            if self.ReplacementPolicy == "1":
                 count = 0
                 for i in range(self.E):
                     if self.Contents[cacheSetIndex][i][0] == "1": # check to see if lines are valid
