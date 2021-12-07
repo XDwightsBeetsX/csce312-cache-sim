@@ -280,7 +280,7 @@ class Cache(object):
         with open("cache.txt", 'a') as cacheFile:
             for set in range(self.S):
                 for line in range(self.E):
-                    for i in range(self.B):
+                    for i in range(self.B + 4):
                         # not sure how indexing past the valid and tag parts goes...
                         cacheFile.write(self.Contents[set][line][i + 4] + " ")
                 cacheFile.write('\n')
