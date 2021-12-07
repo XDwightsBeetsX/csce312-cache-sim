@@ -88,11 +88,11 @@ class Cache(object):
         
 
         # CALCULATE CACHE PARAMS
-        self.S = int(cacheSize / (blockSize * associativity))    # can assume will always be divisible
-        self.s = int(log(cacheSize, 2))                          # can assume will always be divisible
-        self.b = int(log(blockSize, 2))                          # can assume will always be divisible
+        self.S = int(log(cacheSize, 2))                         # can assume will always be divisible
+        self.s = int(log(self.S, 2))                            # can assume will always be divisible
+        self.b = int(log(blockSize, 2))                         # can assume will always be divisible
         self.m = self.ADDRESS_WIDTH
-        self.t = self.m - (self.s + self.b)
+        self.t = self.m - (self.S + self.b)
         self.C = cacheSize
         self.B = blockSize
         self.E = associativity
@@ -101,8 +101,10 @@ class Cache(object):
         
         print("cache successfully configured!")
 
-        print(f"\ns:{self.s} b:{self.b} t:{self.t} m:{self.m}")
-        print(f"S:{self.S} C{self.C} B:{self.B} E:{self.E}\n")
+        # for error checking
+        # print(f"\ns:{self.s} b:{self.b} t:{self.t} m:{self.m}")
+        # print(f"S:{self.S} C:{self.C} B:{self.B} E:{self.E}\n")
+
         print(f"contents:\n{self.Contents}")
 
         # prompt menu for operations like cache-read, memory-dump, etc...
@@ -113,16 +115,22 @@ class Cache(object):
         """
         returns a cleared Cache Contents Lists object with dims B x E x S
         """
-        contents = [[[""] * self.B] * self.E] * self.S
+        contents = [[[""] * (self.B + 4)] * self.E] * self.S
         for s in range(self.S):
             for e in range(self.E):
-                for i in range(self.B):
+                for i in range(self.B + 4):     # add 4 for valid, dirty, replacement, tag+data...
                     # valid bit
                     if i == 0:
                         contents[s][e][i] = "0"
                     # dirty bit
                     elif i == 1:
                         contents[s][e][i] = "0"
+                    # replacement policy
+                    elif i == 2:
+                        contents[s][e][i] = "0"
+                    # tag policy
+                    elif i == 3:
+                        contents[s][e][i] = "00"
                     # data
                     else:
                         contents[s][e][i] = "00"
@@ -189,101 +197,24 @@ class Cache(object):
                 print("Please type a command from the menu.")
 
 
-    def cache_hit(self, address):
+    def tryGetCacheValue(self, setIndex, tag, offset):
+        """
+        Attempts to read the Contents
+        if hit, return[0] = True, return[1] = 'value'
+        else    return[0] = False, return[1] = '-1'
+        """
         isHit = False
-        binaryAddress = (bin(int(address[2:], 16))[2:].zfill(8)) # Converts address into 8 bit binary address
-        tag = binaryAddress[:int(self.t)]
-        setIndex = binaryAddress[int(self.t): (int(self.t)+int(self.s))]
-        if setIndex != "":
-            print(f"set:{int(setIndex, 2)}")
-            self.si = int(setIndex, 2)
-        else:
-            print(f"set:0")
-            self.si = 0
-        
-        if tag != "":
-            print(f"tag:{(hex(int(tag, 2)))[2:].upper()}")
-        else:
-            print("tag:")
-        
-        for e in range(self.E):
-            if tag != "":
-                if (str(self.Contents[self.si][e][0] == "1") and (str(self.Contents[self.si][e][3]).upper() == (str(hex(int(tag, 2)))[2:].zfill(2)).upper())):
-                    self.d_e = e
-                    isHit = True
-                    break
-            else:
-                if ((str(self.Contents[si][e][0])) == "1"):
-                    self.d_e = e
-                    isHit = True
-                    break
-        return isHit
+        value = "-1"
 
-
-    def cache_read2(self, hexAddressStr):
-        tagIndex = int(binaryAddress[:self.t])
-        binaryAddress = (bin(int(hexAddressStr[2:], 16))[2:].zfill(8)) # Converts address into binary address
-        binaryOffset = binaryAddress[int(self.t) + int(self.s):]
+        block = self.Contents[setIndex]
+        for line in block:
+            if line[3] == tag:
+                value = line[3][offset]
         
-
-        if self.cache_hit(hexAddressStr):
-            self.CacheHits += 1
-            print(f"hit:yes")
-            print(f"eviction_policy:-1")
-            print(f"ram_address:-1")
-            print(f"data:0x" + self.Contents[si][d_e][int(binaryOffset, 2) + 4])
-        else: 
-            self.CacheMisses += 1
-            print("hit:no")
-            if self.ReplacementPolicy == "1":
-                count = 0
-                for i in range(self.E):
-                    if self.Contents[si][i][0] == "1": # check to see if lines are valid
-                        count += 1
-                if count != 4: # if all lines aren't valid, we remove those lines
-                    while True:
-                        eviction_line = np.random.randint(1, self.E)
-                        if (self.Contents[si][eviction_line-1][0] == "0"):
-                            break
-                else:
-                    eviction_line = np.random.randint(1, self.E)
-            else:  # least recently used
-                if self.E == "1":
-                    eviction_line = 1
-                elif self.E == "2":
-                    if self.Contents[si][0][2] == "0": # TODO String or Int compare?
-                        eviction_line = 1
-                        self.Contents[si][0][2] = "1"
-                    else: 
-                        eviction_line = 2
-                        self.Contents[si][0][2] = "0"
-                else: # Goes through checking which bit is LFU and sets the eviction line accordingly
-                    if self.Contents[si][0][2] == "0":
-                        eviction_line = 1
-                        self.Contents[si][0][2] = "1"
-                        self.Contents[si][1][2] = "0"
-                    elif self.Contents[si][1][2] == "0":
-                        eviction_line = 2
-                        self.Contents[si][2][2] = "0"
-                    elif self.Contents[si][2][2] == "0":
-                        eviction_line = 3
-                        self.Contents[si][2][2] = "1"
-                        self.Contents[si][3][2] = "0"
-                    else: 
-                        eviction_line = 4
-                        self.Contents[si][3][2] = "1"
-                        self.Contents[si][0][2] = "0"
-            
-            print(f"eviction_line:{eviction_line}")
-            self.Contents[si][eviction_line - 1][0] = "1" # Setting Valid bit to 1
-            if tag != "":
-                self.Contents[setIndex][eviction_line - 1][3] = str(hex(int(tag, 2)))[2:].zfill(2).upper()
-            
-            for b in range(4, self.B + 4):
-                self.Contents[setIndex][eviction_line - 1][b] = self.RAM[hexAddressStr - binaryOffset]
-            
-            print(f"ram_address:{hexAddressStr}")
-            print("data:0x" + self.RAM[hexAddressStr])
+        if value != "":
+            isHit = True
+        
+        return isHit, value
 
 
     def cache_write2(self, hexAddressStr, hexDataToWriteStr):
@@ -376,39 +307,80 @@ class Cache(object):
         
         Displays intermediate info such as set and tag numbers
         """
-        readTag = int(binaryCommandString[0:self.t])
-        readSet = int(binaryCommandString[self.t:-self.b])
-        readOffset = int(binaryCommandString[-self.b:])
+        # offset will always be present
+        readOffset = int(binaryCommandString[-self.b:], 2)
 
-        value = '-1'  # see TODO below
+        # check set associativity
+        readSet = int(binaryCommandString[self.t:-self.b], 2)
+        if readSet == "":
+            readSet = 0
+
+        # check if tag present
+        readTagString = binaryCommandString[0:self.t]
         isHit = False
-        try:
-            # see if cache hit
-            # searching Contents will throw error if indexing is wrong
-            value = self.Contents[readSet][readTag][readOffset]
-            isHit = True
-            self.CacheHits += 1
-        except Exception:
-            # cache miss
-            self.CacheMisses += 1
+        value = "-1"
+        if readTagString != "":
+            isHit, value = self.tryGetCacheValue(readSet, readTagString, readOffset)
+        else:
+            readTagString = "0"
 
         print(f"set:{readSet}")
-        print(f"tag:{readTag}")
+        print(f"tag:{readTagString}")
         if isHit:
+            self.CacheHits += 1
             print(f"hit:yes")
             print(f"eviction_policy:-1")
             print(f"ram_address:-1")
             print(f"data:{value}")
+        
+        # MISS
         else:
+            self.CacheMisses += 1
             print(f"hit:no")
-            print(f"eviction_line:{self.ReplacementPolicy}")
+
+            # REPLACEMENT POLICY
+            evictionLine = -1
+            # random
+            if self.ReplacementPolicy == 1:
+                # check if all lines in set are valid
+                validCheck = [True, 0]
+                for i, line in enumerate(self.Contents[readSet]):
+                    if line[0] != "1":
+                        validCheck[0] = False
+                        validCheck[1] = i
+                
+                if not validCheck[0]:
+                    # pick the first invalid line
+                    evictionLine = validCheck[1]
+                
+                else:
+                    # pick a random eviction line
+                    evictionLine = np.random.randint(0, self.E)
             
-            ramAddy = hex(int(binaryCommandString))
-            print(f"ram_address:0x{ramAddy}")
+            # least frequently used
+            # TODO
+            elif self.ReplacementPolicy == 2:
+                if self.E == 1:
+                    evictionLine = 1
+                elif self.E == 2:
+                    evictionLine = 2
+                else:
+                    pass
             
-            ramIndex = int(ramAddy) / 8
-            ramData = self.RAM[ramIndex]
-            print(f"data:{ramData}")
+            # least recently used
+            # TODO
+            elif self.ReplacementPolicy == 3:
+                pass
+
+            
+            # fetch the requested address value from RAM
+            ramAddress = hex(int(binaryCommandString, 2))
+            ramIndex = int(ramAddress, 16) // self.ADDRESS_WIDTH    # can expect this to always be whole integer regardless
+            value = self.RAM[ramIndex]
+            
+            print(f"eviction_line:{evictionLine}")            
+            print(f"ram_address:{ramAddress}")            
+            print(f"data:{value}")
 
 
     def cache_write(self, binaryCommand, dataToWrite):
@@ -500,23 +472,39 @@ class Cache(object):
         """
         clears the cache contents, replacing all data with '0's
         """
+        # does NOT reset hits/missed
+        # resets all replacement policies to "1"
         self.Contents = self.getEmptyContents()
         print("cache_cleared")
     
 
     def cache_view(self):
+        """
+        Shows the cache setup params and current contents
+        """
+        # REPLACEMENT POLICY
         if self.ReplacementPolicy == 1:
             replacementString = "random_replacement"
-        else:
+        elif self.ReplacementPolicy == 2:
             replacementString = "least_recently_used"
+        elif self.ReplacementPolicy == 3:
+            replacementString = "least_frequently_used"
+        else:
+            replacementString = "NONE SET"
+        
+        # WRITE HIT POLICY
         if self.WriteHitPolicy == 1:
             writeHitString = "write_though"
         else:
             writeHitString = "write_back"
+
+        # WRITE MISS POLICY
         if self.WriteMissPolicy == 1:
             writeMissString = "write_allocate"
         else:
             writeMissString = "no_write_allocate"
+        
+        # PRINT CACHE INFO
         print(f"cache_size:{self.C}")
         print(f"data_block_size:{self.B}")
         print(f"associativity:{self.E}")
@@ -526,25 +514,29 @@ class Cache(object):
         print(f"number_of_cache_hits:{self.CacheHits}")
         print(f"number_of_cache_misses:{self.CacheMisses}")
         
+        # PRINT CACHE CONTENT (skips replacemenrPolicy[2] tag[3])
         print("cache_content:")
         
-        # similar to getEmptyContents
-        for i in range(self.S):
-            for f in range(self.E):
-                for g in range(self.B + 4):
-                    if g != 2: # We need this to skip the LFU index bc we don't print it
-                        print(self.Contents[i][f][g], end=" ")
+        for s in range(self.S):
+            for e in range(self.E):
+                for i in range(self.B + 4):
+                    if i != 2 or i != 3:
+                        print(self.Contents[s][e][i], end=" ")
                 print()
                 
 
     def cache_dump(self):
+        """
+        Write the cache DATA to file cache.txt
+        sep=" "
+        newline='\n'
+        """
         with open("cache.txt", 'a') as cacheFile:
-            for set in range(self.S):
-                for line in range(self.E):
-                    for i in range(self.B + 4):
-                        # not sure how indexing past the valid and tag parts goes...
-                        cacheFile.write(self.Contents[set][line][i + 4] + " ")
-                cacheFile.write('\n')
+            for s in range(self.S):
+                for e in range(self.E):
+                    for i in range(4, self.B):
+                        cacheFile.write(self.Contents[s][e][i] + " ")
+                    cacheFile.write('\n')
 
     
     def memory_view(self):
