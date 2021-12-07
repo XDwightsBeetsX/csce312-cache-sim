@@ -108,10 +108,10 @@ class Cache(object):
                 args.append(c.strip())
             
             if (command == "cache-read"):
-                binaryCommand = bin(args[0]).replace('0b', '')
-                self.cache_read(binaryCommand)
+                address = args[0]
+                self.cache_read(address)
             elif (command == "cache-write"):
-                binaryCommand = bin(args[0]).replace('0b', '')
+                binaryCommand = args[0]
                 dataToWrite = args[1]
                 self.cache_write(binaryCommand, dataToWrite)
             elif (command == "cache-flush"):
@@ -129,7 +129,7 @@ class Cache(object):
             else:
                 print("Please type a command from the menu.")
 
-    def cache_hit(address, self):
+    def cache_hit(self, address):
         isHit = False
         binaryAddress = (bin(int(address[2:], 16))[2:].zfill(8)) # Converts address into 8 bit binary address
         tag = binaryAddress[:int(self.t)]
@@ -159,7 +159,7 @@ class Cache(object):
                         break
         return isHit
 
-    def cache_read2(address, self):
+    def cache_read2(self, address):
         binaryAddress = (bin(int(address[2:], 16))[2:].zfill(8)) # Converts address into binary address
         binaryOffset = binaryAddress[self.t + self.s:]
         tag = binaryAddress[:self.t]
@@ -221,7 +221,7 @@ class Cache(object):
             print(f"ram_address:{address}")
             print("data:0x" + RAM[address])
 
-    def cache_write2(address, self, dataToWrite):
+    def cache_write2(self, address, dataToWrite):
         binaryAddress = (bin(int(address[2:], 16))[2:].zfill(8)) # Converts address into binary address
         binaryOffset = binaryAddress[self.t + self.s:]
         tag = binaryAddress[:self.t]
