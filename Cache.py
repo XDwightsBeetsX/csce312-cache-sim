@@ -36,28 +36,42 @@ class Cache(object):
 
         self.CacheHits = 0
         self.CacheMisses = 0
-
-        self.Contents = self.getEmptyContents()
-
+        self.Contents = []
+        for s in range(self.S):
+            self.Contents.append([]) 
+            for e in range(self.E):
+                self.Contents[s].append([]) 
+                for i in range(self.B + 4):
+                    if i == 0:
+                        self.Contents[s][e].append("0")    # This is the Valid bit
+                    elif i == 1:
+                        self.Contents[s][e].append("0")     # This is the Dirty Bit
+                    elif i == 2:
+                        self.Contents[s][e].append("0")    # This is the LRU/LFU bit
+                        # TODO issues w/ rep policy here?
+                        # 1 -> Random Replacement
+                        # 2 -> Least Recently Used
+                    else:
+                        self.Contents[s][e].append("00")  # Tag and Data Amount (hex)
         print("cache successfully configured!")
-    
+        self.menu()
 
     def getEmptyContents(self):
         for s in range(self.S):             # Not totally sure if this is correct. But it is how I understood it
             for e in range(self.E):
                 for i in range(self.B + 4):
                     if i == 0:
-                        c[s][e][i] = "0"    # This is the Valid bit
+                        self.Contents[s][e][i] = "0"    # This is the Valid bit
                     elif i == 1:
-                        c[s][e][i] = "0"    # This is the Dirty Bit
+                        self.Contents[s][e][i] = "0"    # This is the Dirty Bit
                     elif i == 2:
-                        c[s][e][i] = "0"    # This is the LRU/LFU bit
+                        self.Contents[s][e][i] = "0"    # This is the LRU/LFU bit
                         # TODO issues w/ rep policy here?
                         # 1 -> Random Replacement
                         # 2 -> Least Recently Used
                     else:
-                        c[s][e][i] = "00" # Tag and Data Amount (hex)
-        return c
+                        self.Contents[s][e][i] = "00" # Tag and Data Amount (hex)
+        return self
 
 
     def menu(self):
@@ -104,9 +118,10 @@ class Cache(object):
                 self.cache_dump()
             elif (command == "memory-dump"):
                 self.memory_dump()
+            elif (command == "quit")
+                quit()
             else:
                 print("Please type a command from the menu.")
-        quit()
 
 
     def cache_read(self, binaryCommandStr):
