@@ -1,14 +1,14 @@
 
-from Cache import Cache
+from utils import getBinaryStringFromHexString
+
 
 if __name__ == "__main__":
-
-    ram = ["00", "FF", "10"]
-    
-    C = Cache(ram)
-
-    print("S, C, B, E")
-    print(C.S, C.C, C.B, C.E)
-
-    print("s, b, t")
-    print(C.s, C.b, C.t)
+    print("===========================================")
+    print("=============== Conversions ===============")
+    print("===========================================")
+    h1 = "0x00"
+    print(f"{h1} -> {getBinaryStringFromHexString(h1)}")
+    h2 = "0xFF"
+    print(f"{h2} -> {getBinaryStringFromHexString(h2)}")
+    h3 = "0x18"
+    print(f"{h3} -> {getBinaryStringFromHexString(h3)}")
