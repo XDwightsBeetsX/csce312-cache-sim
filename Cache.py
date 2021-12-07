@@ -52,7 +52,7 @@ class Cache(object):
                     elif i == 1:
                         self.Contents[s][e].append("0")     # This is the Dirty Bit
                     elif i == 2:
-                        self.Contents[s][e].append("0")    # This is the LRU/LFU bit
+                        self.Contents[s][e].append(0)    # This is the LRU/LFU bit
                         # TODO issues w/ rep policy here?
                         # 1 -> Random Replacement
                         # 2 -> Least Recently Used
@@ -71,7 +71,7 @@ class Cache(object):
                     elif i == 1:
                         self.Contents[s][e][i] = "0"    # This is the Dirty Bit
                     elif i == 2:
-                        self.Contents[s][e][i] = "0"    # This is the LRU/LFU bit
+                        self.Contents[s][e][i] = 0    # This is the LRU/LFU bit
                         # TODO issues w/ rep policy here?
                         # 1 -> Random Replacement
                         # 2 -> Least Recently Used
@@ -134,13 +134,13 @@ class Cache(object):
         isHit = False
         binaryAddress = (bin(int(address[2:], 16))[2:].zfill(8)) # Converts address into 8 bit binary address
         tag = binaryAddress[:int(self.t)]
-        setIndex = binaryAddress[self.t: (self.t+self.s)]
+        setIndex = binaryAddress[int(self.t): (int(self.t)+int(self.s))]
         if setIndex != "":
             print(f"set:{int(setIndex, 2)}")
-            si = int(setIndex, 2)
+            self.si = int(setIndex, 2)
         else:
             print(f"set:0")
-            si = 0
+            self.si = 0
         
         if tag != "":
             print(f"tag:{(hex(int(tag, 2)))[2:].upper()}")
@@ -149,41 +149,41 @@ class Cache(object):
         
         for e in range(self.E):
             if tag != "":
-                if (str(self.Contents[setIndex][e][0] == "1") and (str(self.Contents[setIndex][e][3]).upper() == (str(hex(int(tag, 2)))[2:].zfill(2)).upper())):
-                    d_e = e
+                if (str(self.Contents[si][e][0] == "1") and (str(self.Contents[si][e][3]).upper() == (str(hex(int(tag, 2)))[2:].zfill(2)).upper())):
+                    self.d_e = e
                     isHit = True
                     break
             else:
-                if ((str(self.Contents[setIndex][e][0])) == "1"):
-                    d_e = e
-                    hit = True
+                if ((str(self.Contents[si][e][0])) == "1"):
+                    self.d_e = e
+                    isHit = True
                     break
         return isHit
 
 
     def cache_read2(self, address):
         binaryAddress = (bin(int(address[2:], 16))[2:].zfill(8)) # Converts address into binary address
-        binaryOffset = binaryAddress[self.t + self.s:]
-        tag = binaryAddress[:self.t]
+        binaryOffset = binaryAddress[int(self.t) + int(self.s):]
+        tag = binaryAddress[:int(self.t)]
 
         if self.cache_hit(address):
             self.CacheHits += 1
             print(f"hit:yes")
             print(f"eviction_policy:-1")
             print(f"ram_address:-1")
-            print(f"data:0x" + self.Contents[setIndex][d_e][int(binaryOffset, 2) + 4])
+            print(f"data:0x" + self.Contents[si][d_e][int(binaryOffset, 2) + 4])
         else: 
             self.CacheMisses += 1
             print("hit:no")
             if self.replacement_policy == "1":
                 count = 0
                 for i in range(self.E):
-                    if self.Contents[cacheSetIndex][i][0] == "1": # check to see if lines are valid
+                    if self.Contents[si][i][0] == "1": # check to see if lines are valid
                         count += 1
                 if count != 4: # if all lines aren't valid, we remove those lines
                     while True:
                         eviction_line = np.random.randint(1, self.E)
-                        if (self.Contents[cacheSetIndex][eviction_line-1][0] == "0"):
+                        if (self.Contents[si][eviction_line-1][0] == "0"):
                             break
                 else:
                     eviction_line = np.random.randint(1, self.E)
@@ -191,32 +191,31 @@ class Cache(object):
                 if self.E == "1":
                     eviction_line = 1
                 elif self.E == "2":
-                    if self.Contents[cacheSetIndex][0][2] == "0": # TODO String or Int compare?
+                    if self.Contents[si][0][2] == "0": # TODO String or Int compare?
                         eviction_line = 1
-                        self.Contents[cacheSetIndex][0][2] = "1"
+                        self.Contents[si][0][2] = "1"
                     else: 
                         eviction_line = 2
-                        self.Contents[cacheSetIndex][0][2] = "0"
+                        self.Contents[si][0][2] = "0"
                 else: # Goes through checking which bit is LFU and sets the eviction line accordingly
-                    if self.Contents[cacheSetIndex][0][2] == "0":
+                    if self.Contents[si][0][2] == "0":
                         eviction_line = 1
-                        self.Contents[cacheSetIndex][0][2] = "1"
-                        self.Contents[cacheSetIndex][1][2] = "0"
-                    elif self.Contents[cacheSetIndex][1][2] == "0":
+                        self.Contents[si][0][2] = "1"
+                        self.Contents[si][1][2] = "0"
+                    elif self.Contents[si][1][2] == "0":
                         eviction_line = 2
-                        self.Contents[cacheSetIndex][1][2] = "1"
-                        self.Contents[cacheSetIndex][2][2] = "0"
-                    elif self.Contents[cacheSetIndex][2][2] == "0":
+                        self.Contents[si][2][2] = "0"
+                    elif self.Contents[si][2][2] == "0":
                         eviction_line = 3
-                        self.Contents[cacheSetIndex][2][2] = "1"
-                        self.Contents[cacheSetIndex][3][2] = "0"
+                        self.Contents[si][2][2] = "1"
+                        self.Contents[si][3][2] = "0"
                     else: 
                         eviction_line = 4
-                        self.Contents[cacheSetIndex][3][2] = "1"
-                        self.Contents[cacheSetIndex][0][2] = "0"
+                        self.Contents[si][3][2] = "1"
+                        self.Contents[si][0][2] = "0"
             
             print(f"eviction_line:{eviction_line}")
-            self.Contents[setIndex][eviction_line - 1][0] = "1" # Setting Valid bit to 1
+            self.Contents[si][eviction_line - 1][0] = "1" # Setting Valid bit to 1
             if tag != "":
                 self.Contents[setIndex][eviction_line - 1][3] = str(hex(int(tag, 2)))[2:].zfill(2).upper()
             
