@@ -6,6 +6,17 @@ from utils import getBinaryStringFromHexString
 import random as rand
 
 class Cache(object):
+    """
+    Cache object stores the Cache.Contents
+
+    Initialized from a 1-D array of RAM
+
+    The size and dimensions of the contents are set by prompts in __init__
+
+    Able to perform operations offered in the 'menu()' loop such as cache-read and memory-dump
+
+    Tracks the number of CacheHits and CacheMisses
+    """
     def __init__(self, ram):
         """
         Cache Initialization.
@@ -106,7 +117,9 @@ class Cache(object):
 
     def getEmptyContents(self):
         """
-        returns a cleared Cache Contents Lists object with dims B x E x S
+        Helper method for initialization and flushing.
+
+        returns a cleared lists object with dims (4+B) x E x S
         """
         contents = []
         for s in range(self.S):
@@ -134,7 +147,7 @@ class Cache(object):
 
     def menu(self):
         """
-        This is like the game loop or whatever, but is not yet called.
+        Command loop takes input command and directs operation to the corresponding class method
         """
         command = ""
         while (command != "quit"):
@@ -159,9 +172,12 @@ class Cache(object):
             for c in c[1:]:
                 args.append(c.strip()[2:].upper())
             
-            # MENU COMMANDS
+
+            # =====================================
+            # =========== MENU COMMANDS ===========
+            # =====================================
+            # use getBinaryStringFromHexString helper method to parse hex instructions
             if (command == "cache-read"):
-                # pass in the hexadecimal cache read address string
                 binaryCommandString = getBinaryStringFromHexString(args[0])
                 self.cache_read(binaryCommandString)
 
@@ -199,40 +215,49 @@ class Cache(object):
         Displays intermediate info such as set and tag numbers
         """
         # offset will always be present
-        readOffset = int(binaryCommandString[-self.b:], 2)
+        offsetIndex = int(binaryCommandString[-self.b:], 2)
 
         # check set associativity
-        readSet = int(binaryCommandString[self.t:-self.b], 2)
-        if readSet == "":
-            readSet = 0
+        setIndex = int(binaryCommandString[self.t:-self.b], 2)
+        if setIndex == "":
+            setIndex = 0
 
         # tag from command
-        readTagString = binaryCommandString[0:self.t-1]
+        targetTag = binaryCommandString[0:self.t-1]
         
-        # determine if cache hit
+        # pre-set some vars to update if a cache hit
         isHit = False
         value = "-1"
-        if readTagString != "":
-            block = self.Contents[readSet]
+
+        # determine if cache hit
+        if targetTag != "":
+            block = self.Contents[setIndex]
             for line in block:
-                if line[3] == readTagString:
-                    value = line[4 + readOffset]
+                # see if any of the lines in the set block match the tag
+                if line[3] == targetTag:
+                    # this line in the setIndex matches the tag -> HIT
+                    value = line[4 + offsetIndex]
                     isHit = True
                     break
         else:
-            readTagString = "00"
+            targetTag = "00"
+        
 
-        # HIT
+        # ====================================
+        # ============== HIT =================
+        # ====================================
         if isHit:
             self.CacheHits += 1
-            print(f"set:{readSet}")
-            print(f"tag:{readTagString}")
+            print(f"set:{setIndex}")
+            print(f"tag:{targetTag}")
             print(f"hit:yes")
             print(f"eviction_line:-1")
             print(f"ram_address:-1")
             print(f"data:0x{value}")
         
-        # MISS
+        # ====================================
+        # ============== MISS ================
+        # ====================================
         else:
             self.CacheMisses += 1
             
@@ -242,7 +267,7 @@ class Cache(object):
             if self.ReplacementPolicy == 1:
                 # check if all lines in set are valid
                 validCheck = [True, 0]
-                for i, line in enumerate(self.Contents[readSet]):
+                for i, line in enumerate(self.Contents[setIndex]):
                     if line[0] != "1":
                         validCheck[0] = False
                         validCheck[1] = i
@@ -263,27 +288,27 @@ class Cache(object):
                 
                 elif self.E == 2:
                     # see if the first line was most recently used
-                    if self.Contents[readSet][0][2] == "0":
+                    if self.Contents[setIndex][0][2] == "0":
                         evictionLine = 1
                     # otherwise it was the second line
                     else:
                         evictionLine = 2
-                        self.Contents[readSet][0][2] = "0"
+                        self.Contents[setIndex][0][2] = "0"
                 
                 # if more than 2 lines, need to iterate to check least recent
                 else:
                     for l in range(self.E):
                         # if the last line is lest recently used, reset all replacement bits to 0
                         if l == self.E - 1:
-                            for line in self.Contents[readSet]:
+                            for line in self.Contents[setIndex]:
                                 line[2] = "0"
                             evictionLine = l+1
                             break
 
                         # first line with 0 is the least recently used
-                        elif self.Contents[readSet][l][2] == "0":
+                        elif self.Contents[setIndex][l][2] == "0":
                             evictionLine = l+1
-                            self.Contents[readSet][l][2] = "1"
+                            self.Contents[setIndex][l][2] = "1"
                             break
             
             # least frequently used
@@ -297,8 +322,8 @@ class Cache(object):
             ramIndex = int(ramAddress, 16) // self.ADDRESS_WIDTH    # can expect this to always be whole integer regardless
             value = self.RAM[ramIndex]
             
-            print(f"set:{readSet}")
-            print(f"tag:{readTagString}")
+            print(f"set:{setIndex}")
+            print(f"tag:{targetTag}")
             print(f"hit:no")
             print(f"eviction_line:{evictionLine}")            
             print(f"ram_address:{ramAddress}")            
@@ -326,6 +351,8 @@ class Cache(object):
         value = "-1"
         dirtyBit = "-1"
         lineIndex = -1
+        
+        # if no bits are allocated to the readTagString, sets it to '00'
         if readTagString != "":
             # find the index of the line in the block to write to
             block = self.Contents[readSet]
@@ -339,7 +366,9 @@ class Cache(object):
             readTagString = "00"
 
         
-        # HIT
+        # =====================================
+        # =============== HIT =================
+        # =====================================
         if isHit:
             self.CacheHits += 1
             self.Contents[readSet][lineIndex][4 + readOffset] = dataToWrite
@@ -352,7 +381,7 @@ class Cache(object):
             if self.WriteHitPolicy == 1:
                 self.RAM[ramIndex] = dataToWrite
             
-            
+            # print the results
             print(f"set:{readSet}")
             print(f"tag:{readTagString}")
             print(f"hit:yes")
@@ -362,7 +391,9 @@ class Cache(object):
             print(f"dirty_bit:{dirtyBit}")
         
         
-        # MISS
+        # =====================================
+        # ============== MISS =================
+        # =====================================
         else:
             self.CacheMisses += 1
 
@@ -444,6 +475,7 @@ class Cache(object):
             # fetch the requested address value from RAM
             ramAddress = hex(int(binaryCommandString, 2))
             ramAddressString = ""
+            # add leading 0x'0'# for addresses 0x0 and 0x8
             if ramAddress == 0:
                 ramAddressString = "0x00"
             elif ramAddress == 8:
@@ -451,6 +483,7 @@ class Cache(object):
             else:
                 ramAddressString = str(ramAddress)
             
+            # print the results
             print(f"set:{readSet}")
             print(f"tag:{readTagString}")
             print(f"hit:no")
