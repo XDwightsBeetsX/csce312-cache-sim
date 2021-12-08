@@ -2,7 +2,6 @@
 
 import numpy as np
 from math import log
-
 from utils import getBinaryStringFromHexString
 
 
@@ -168,7 +167,7 @@ class Cache(object):
 
             elif (command == "cache-write"):
                 binaryCommandString = getBinaryStringFromHexString(args[0])
-                hexDataToWriteStr = args[1]
+                hexDataToWriteStr = str(args[1]).upper()
                 self.cache_write(binaryCommandString, hexDataToWriteStr)
 
             elif (command == "cache-flush"):
@@ -360,7 +359,7 @@ class Cache(object):
             print(f"hit:yes")
             print(f"eviction_policy:-1")
             print(f"ram_address:-1")
-            print(f"data:{value}")
+            print(f"data:0x{value}")
             print(f"dirty_bit:{dirtyBit}")
         
         
@@ -458,7 +457,7 @@ class Cache(object):
             print(f"hit:no")
             print(f"eviction_line:{evictionLine}")            
             print(f"ram_address:{ramAddressString}")            
-            print(f"data:{dataToWrite}")
+            print(f"data:0x{dataToWrite}")
             print(f"dirty_bit:{dirtyBit}")
 
     
