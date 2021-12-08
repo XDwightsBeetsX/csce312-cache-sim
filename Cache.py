@@ -1,9 +1,9 @@
 
 
-import numpy as np
 from math import log
 from utils import getBinaryStringFromHexString
 
+import random as rand
 
 class Cache(object):
     def __init__(self, ram):
@@ -254,7 +254,7 @@ class Cache(object):
                 
                 else:
                     # pick a random eviction line
-                    evictionLine = np.random.randint(1, self.E+1)  # +1 for index -> int
+                    evictionLine = rand.randint(1, self.E+1)  # +1 for index -> int
             
             # least recently used
             # TODO
@@ -382,7 +382,7 @@ class Cache(object):
                 
                 if allValid:
                     # pick a random eviction line
-                    evictionLine = np.random.randint(1, self.E+1)  # +1 for index -> int
+                    evictionLine = rand.randint(1, self.E+1)  # +1 for index -> int
             
             # least recently used
             elif self.ReplacementPolicy == 2:
@@ -513,7 +513,7 @@ class Cache(object):
         for s in range(self.S):
             for e in range(self.E):
                 for i in range(self.B + 4):
-                    if i != 2 or i != 3:
+                    if i != 2:
                         print(self.Contents[s][e][i], end=" ")
                 print()
                 

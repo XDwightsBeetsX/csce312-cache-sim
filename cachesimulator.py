@@ -23,9 +23,7 @@ if __name__ == "__main__":
     # 1. Initialize the physical memory
     print("*** Welcome to the cache simulator ***")
 
-    print("init-ram 0x00 0xFF")
-    # init = input("initialize the RAM:\n").split(" ")  # expected command is 'init-ram 0x# 0x#'
-    
+    init = input("initialize the RAM:\n").split(" ")  # expected command is 'init-ram 0x# 0x#'
     ramStart, ramEnd = 0, 255  # int(init[1], 16), int(init[2], 16)
     ramSize = ramEnd - ramStart + 1
 
