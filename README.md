@@ -3,6 +3,7 @@
 Work for TAMU CSCE 312 Kebo Project - Cache Simulator
 
 **Authors:**
+
 - John Gutierrez
 - Cameron Herring
 
@@ -14,7 +15,7 @@ git clone https://github.com/XDwightsBeetsX/csce312-cache-sim
 
 ## Commands
 
-| command | flags | description |
+| command | arguments | description |
 | :-- | :-: | :-- |
 
 ## Documentation with [Doxygen](https://www.doxygen.nl/manual/docblocks.html#pythonblocks)
