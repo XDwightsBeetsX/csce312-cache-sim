@@ -157,7 +157,7 @@ class Cache(object):
             command = c[0].strip()
             args = []
             for c in c[1:]:
-                args.append(c.strip()[2:])
+                args.append(c.strip()[2:].upper())
             
             # MENU COMMANDS
             if (command == "cache-read"):
@@ -217,9 +217,8 @@ class Cache(object):
             for line in block:
                 if line[3] == readTagString:
                     value = line[4 + readOffset]
+                    isHit = True
                     break
-            if value != "":
-                isHit = True
         else:
             readTagString = "00"
 
@@ -229,7 +228,7 @@ class Cache(object):
             print(f"set:{readSet}")
             print(f"tag:{readTagString}")
             print(f"hit:yes")
-            print(f"eviction_policy:-1")
+            print(f"eviction_line:-1")
             print(f"ram_address:-1")
             print(f"data:0x{value}")
         

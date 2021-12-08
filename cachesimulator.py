@@ -29,7 +29,7 @@ if __name__ == "__main__":
 
     # init RAM by reading first bytes into list
     ram = []
-    with open(filename, "r+") as inputFile:
+    with open(filename, "r") as inputFile:
         lines = inputFile.read().splitlines()
         ram = lines[0:ramSize]
 
