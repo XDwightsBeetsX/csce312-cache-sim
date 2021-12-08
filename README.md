@@ -49,3 +49,13 @@ python cachesimulator.py input.txt
 ## Documentation with [Doxygen](https://www.doxygen.nl/manual/docblocks.html#pythonblocks)
 
 - comments -> documentation
+- uses a `py_filter.bat` file to determine the documentation
+
+```shell
+doxygen py_filter.bat -a -c %1
+```
+
+### Documentation Output
+
+- under the `root/html` folder
+  - *html* files such as *classes.html* show documentation and comments
