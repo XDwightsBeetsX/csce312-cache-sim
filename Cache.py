@@ -97,14 +97,9 @@ class Cache(object):
         self.B = blockSize
         self.E = associativity
 
+        # set the Cache contents to be initially 0s
         self.Contents = self.getEmptyContents()
-        
         print("cache successfully configured!")
-
-        # for error checking
-        print(f"\ns:{self.s} b:{self.b} t:{self.t} m:{self.m}")
-        print(f"S:{self.S} C:{self.C} B:{self.B} E:{self.E}\n")
-        print(f"contents:\n{self.Contents}")
 
         # prompt menu for operations like cache-read, memory-dump, etc...
         self.menu()
@@ -114,25 +109,27 @@ class Cache(object):
         """
         returns a cleared Cache Contents Lists object with dims B x E x S
         """
-        contents = [[[""] * (self.B + 4)] * self.E] * self.S
+        contents = []
         for s in range(self.S):
+            contents.append([])
             for e in range(self.E):
+                contents[s].append([])
                 for i in range(self.B + 4):     # add 4 for valid, dirty, replacement, tag+data...
                     # valid bit
                     if i == 0:
-                        contents[s][e][i] = "0"
+                        contents[s][e].append("0")
                     # dirty bit
                     elif i == 1:
-                        contents[s][e][i] = "0"
+                        contents[s][e].append("0")
                     # replacement policy
                     elif i == 2:
-                        contents[s][e][i] = "0"
+                        contents[s][e].append("0")
                     # tag policy
                     elif i == 3:
-                        contents[s][e][i] = "00"
+                        contents[s][e].append("00")
                     # data
                     else:
-                        contents[s][e][i] = "00"
+                        contents[s][e].append("00")
         return contents
 
 
@@ -161,7 +158,7 @@ class Cache(object):
             command = c[0].strip()
             args = []
             for c in c[1:]:
-                args.append(c.strip())
+                args.append(c.strip()[2:])
             
             # MENU COMMANDS
             if (command == "cache-read"):
@@ -171,7 +168,7 @@ class Cache(object):
 
             elif (command == "cache-write"):
                 binaryCommandString = getBinaryStringFromHexString(args[0])
-                hexDataToWriteStr = args[1]     # "0xF2"-like
+                hexDataToWriteStr = args[1]
                 self.cache_write(binaryCommandString, hexDataToWriteStr)
 
             elif (command == "cache-flush"):
@@ -235,7 +232,7 @@ class Cache(object):
             print(f"hit:yes")
             print(f"eviction_policy:-1")
             print(f"ram_address:-1")
-            print(f"data:{value}")
+            print(f"data:0x{value}")
         
         # MISS
         else:
@@ -332,7 +329,7 @@ class Cache(object):
         dirtyBit = "-1"
         lineIndex = -1
         if readTagString != "":
-            # find the index of the line in the blockt to write to
+            # find the index of the line in the block to write to
             block = self.Contents[readSet]
             for i, line in enumerate(block):
                 if line[3] == readTagString:
@@ -343,19 +340,20 @@ class Cache(object):
         else:
             readTagString = "00"
 
+        
         # HIT
         if isHit:
             self.CacheHits += 1
-            self.Contents[readSet][lineIndex][readOffset] = dataToWrite
+            self.Contents[readSet][lineIndex][4 + readOffset] = dataToWrite
+            
+            # get the RAM index from the command
+            ramAddress = hex(int(binaryCommandString, 2))
+            ramIndex = int(ramAddress, 16) // self.ADDRESS_WIDTH
             
             # when cache hit & policy is set, write data to ram (as well)
             if self.WriteHitPolicy == 1:
-                ramAddress = hex(int(binaryCommandString, 2))
-                ramIndex = int(ramAddress, 16) // self.ADDRESS_WIDTH
                 self.RAM[ramIndex] = dataToWrite
-            # if no white hit policy, set the dirty bit for this value
-            else:
-                self.Contents[readSet][lineIndex][1] = 1
+            
             
             print(f"set:{readSet}")
             print(f"tag:{readTagString}")
@@ -365,26 +363,25 @@ class Cache(object):
             print(f"data:{value}")
             print(f"dirty_bit:{dirtyBit}")
         
+        
         # MISS
         else:
             self.CacheMisses += 1
 
             # REPLACEMENT POLICY
             evictionLine = -1
+            
             # random
             if self.ReplacementPolicy == 1:
                 # check if all lines in set are valid
-                validCheck = [True, 0]
+                allValid = True
                 for i, line in enumerate(self.Contents[readSet]):
                     if line[0] != "1":
-                        validCheck[0] = False
-                        validCheck[1] = i
+                        allValid = False
+                        evictionLine = i + 1
+                        break
                 
-                if not validCheck[0]:
-                    # pick the first invalid line
-                    evictionLine = validCheck[1]
-                
-                else:
+                if allValid:
                     # pick a random eviction line
                     evictionLine = np.random.randint(1, self.E+1)  # +1 for index -> int
             
@@ -424,16 +421,44 @@ class Cache(object):
                 pass
 
 
+            if self.WriteMissPolicy == 1:
+                # set the valid bit of eviction line to 1
+                self.Contents[readSet][evictionLine - 1][0] = "1"
+
+                # get the RAM index from the command
+                ramAddress = hex(int(binaryCommandString, 2))
+                ramIndex = int(ramAddress, 16) // self.ADDRESS_WIDTH
+                
+                # set the next self.B cache bytes from RAM
+                for i in range(self.B):
+                    self.Contents[readSet][evictionLine - 1][4 + i] = self.RAM[ramIndex + i]
+
+                # now overrite the copied data with the dataToWrite
+                self.Contents[readSet][evictionLine - 1][4 + readOffset] = dataToWrite
+
+                # write the data to RAM if theres also a writeHitPolicy, otherwise set the dirty bit to 1
+                if self.WriteHitPolicy == 1:
+                    self.RAM[ramIndex] = dataToWrite
+                else:
+                    self.Contents[readSet][evictionLine - 1][1] = "1"
+
+
             # fetch the requested address value from RAM
             ramAddress = hex(int(binaryCommandString, 2))
-            self.Contents[readSet][evictionLine][readOffset] = dataToWrite
+            ramAddressString = ""
+            if ramAddress == 0:
+                ramAddressString = "0x00"
+            elif ramAddress == 8:
+                ramAddressString = "0x08"
+            else:
+                ramAddressString = str(ramAddress)
             
             print(f"set:{readSet}")
             print(f"tag:{readTagString}")
             print(f"hit:no")
             print(f"eviction_line:{evictionLine}")            
-            print(f"ram_address:{ramAddress}")            
-            print(f"data:0x{dataToWrite}")
+            print(f"ram_address:{ramAddressString}")            
+            print(f"data:{dataToWrite}")
             print(f"dirty_bit:{dirtyBit}")
 
     
@@ -500,7 +525,7 @@ class Cache(object):
         sep=" "
         newline='\n'
         """
-        with open("cache.txt", 'a') as cacheFile:
+        with open("cache.txt", 'w') as cacheFile:
             for s in range(self.S):
                 for e in range(self.E):
                     for i in range(4, self.B):
@@ -538,7 +563,7 @@ class Cache(object):
         writes the current RAM data to the file 'ram.txt'
         """
         # will create or overrite the 'ram.txt' file
-        with open("ram.txt", 'a') as ramWrite:
+        with open("ram.txt", 'w') as ramWrite:
             for i, r in enumerate(self.RAM):
                 # cast numbers to strings and write
                 ramWrite.write(r)
