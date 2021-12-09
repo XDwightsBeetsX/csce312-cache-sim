@@ -287,7 +287,7 @@ class Cache(object):
         # tag from command
         targetTagBinStr = binaryCommandString[0:self.t]
         
-        # pre-set some vars to update if a cache hit
+        # get vars from cacheHit search
         isHit, value, _lineIndex, _dirtyBit = self.isCacheHit(setIndex, targetTagBinStr, offsetIndex)
 
         # ====================================
@@ -323,7 +323,6 @@ class Cache(object):
                         break
                 
                 if not validCheck[0]:
-                    print("not all valid: ", validCheck)
                     # pick the first invalid line
                     evictionLine = validCheck[1]
                 
@@ -626,18 +625,11 @@ class Cache(object):
         print("memory_content:")
         print("address:data")
 
-        firstLine = True
-        for i, r in enumerate(self.RAM):
-            if firstLine:
-                print(f"0x00:", end="")
-                firstLine = False
-            elif i % self.ADDRESS_WIDTH == 0:
-                if i == 8:
-                    print(f"\n0x08:", end="")
-                else:
-                    print(f"\n{str(hex(i))}:", end="")
-            
-            print(r, end=" ")
+        for line in range(len(self.RAM)//self.ADDRESS_WIDTH):
+            print(f"0x{str(hex(line))[2:].zfill(2).upper()}:", end="")
+            for i in range(self.ADDRESS_WIDTH):
+                print(self.RAM[line*8 + i], end=" ")
+            print()
 
 
     def memory_dump(self):
