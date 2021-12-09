@@ -199,6 +199,13 @@ class Cache(object):
         return False, "-1", -1, -1
     
 
+    def getAbbrvTagHexStringFromBinString(self, targetTagBinStr):
+        """
+        helper method to do binary string to hex string conversion
+        """
+        return str(hex(int(targetTagBinStr, 2)))[2:].zfill(2).upper()
+    
+
     def menu(self):
         """
         Command loop takes input command and directs operation to the corresponding class method
@@ -289,7 +296,7 @@ class Cache(object):
         if isHit:
             self.CacheHits += 1
             print(f"set:{setIndex}")
-            print(f"tag:{str(hex(int(targetTagBinStr, 2)))[2:].zfill(2).upper()}")
+            print(f"tag:{self.getAbbrvTagHexStringFromBinString(targetTagBinStr)}")
             print(f"hit:yes")
             print(f"eviction_line:-1")
             print(f"ram_address:-1")
@@ -370,7 +377,7 @@ class Cache(object):
             value = self.RAM[ramIndex]
             
             print(f"set:{setIndex}")
-            print(f"tag:{str(hex(int(targetTagBinStr, 2)))[2:].zfill(2).upper()}")
+            print(f"tag:{self.getAbbrvTagHexStringFromBinString(targetTagBinStr)}")
             print(f"hit:no")
             print(f"eviction_line:{evictionLine}")            
             print(f"ram_address:0x{ramAddress[2:].zfill(2).upper()}")            
@@ -421,7 +428,7 @@ class Cache(object):
             
             # print the results
             print(f"set:{setIndex}")
-            print(f"tag:{str(hex(int(targetTagBinStr, 2)))[2:].zfill(2).upper()}")
+            print(f"tag:{self.getAbbrvTagHexStringFromBinString(targetTagBinStr)}")
             print(f"hit:yes")
             print(f"eviction_policy:-1")
             print(f"ram_address:-1")
@@ -522,7 +529,7 @@ class Cache(object):
             
             # print the results
             print(f"set:{setIndex}")
-            print(f"tag:{str(hex(int(targetTagBinStr, 2)))[2:].zfill(2).upper()}")
+            print(f"tag:{self.getAbbrvTagHexStringFromBinString(targetTagBinStr)}")
             print(f"hit:no")
             print(f"eviction_line:{evictionLine}")
             print(f"ram_address:{ramAddressString}")
