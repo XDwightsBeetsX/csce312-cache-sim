@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: csce312-cache-sim :computer:</title>
+<title>CSCE 312 - Kebo - Cache Project - John Gutierrez &amp; Cameron Herring: csce312-cache-sim :computer:</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">CSCE 312 - Kebo - Cache Project - John Gutierrez &amp; Cameron Herring
    </div>
   </td>
  </tr>
@@ -73,14 +73,61 @@ $(function() {
 </ul>
 <h1><a class="anchor" id="autotoc_md1"></a>
 Usage</h1>
+<p >Installing this package:</p>
 <div class="fragment"><div class="line">git clone https://github.com/XDwightsBeetsX/csce312-cache-sim</div>
+</div><!-- fragment --><ul>
+<li>Running the Cache with python<ul>
+<li><p class="startli">requires input.txt with the input RAM in the form:</p>
+<div class="fragment"><div class="line">08</div>
+<div class="line">6F</div>
+<div class="line">8D</div>
+<div class="line">6A</div>
+<div class="line">C8</div>
+<div class="line">0C</div>
+<div class="line">D1</div>
+</div><!-- fragment --></li>
+</ul>
+</li>
+</ul>
+<div class="fragment"><div class="line">python cachesimulator.py input.txt</div>
 </div><!-- fragment --><h1><a class="anchor" id="autotoc_md2"></a>
 Commands</h1>
-<p >| command | arguments | description | | :&ndash; | :-: | :&ndash; |</p>
+<table class="markdownTable">
+<tr class="markdownTableHead">
+<th class="markdownTableHeadLeft">command   </th><th class="markdownTableHeadCenter">arguments   </th><th class="markdownTableHeadLeft">description    </th></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>init-ram</code>   </td><td class="markdownTableBodyCenter">ramStart(hex) ramEnd(hex)   </td><td class="markdownTableBodyLeft">initializes the ram of size (ramEnd-ramStart+1)    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>cache-read</code>   </td><td class="markdownTableBodyCenter">instruction(hex)   </td><td class="markdownTableBodyLeft"><code>instruction</code> is decomposed into a <em>set index</em>, <em>tag</em>, and an <em>offset</em>. The cache at this location is read and reported.    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>cache-write</code>   </td><td class="markdownTableBodyCenter">instruction(hex) dataToWrite(hex)   </td><td class="markdownTableBodyLeft">Decomposes the <code>insruction</code> like cache-read, and writes the <code>dataToWrite</code> to that location.    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>cache-flush</code>   </td><td class="markdownTableBodyCenter"><em>none</em>   </td><td class="markdownTableBodyLeft">replaces the cache contents with all 0s    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>cache-view</code>   </td><td class="markdownTableBodyCenter"><em>none</em>   </td><td class="markdownTableBodyLeft">displays the current cache contents.    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>memory-view</code>   </td><td class="markdownTableBodyCenter"><em>none</em>   </td><td class="markdownTableBodyLeft">displays the current RAM contents.    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>cache-dump</code>   </td><td class="markdownTableBodyCenter"><em>none</em>   </td><td class="markdownTableBodyLeft">writes the current cache contents to file <code>cache.txt</code>    </td></tr>
+<tr class="markdownTableRowEven">
+<td class="markdownTableBodyLeft"><code>memory-dump</code>   </td><td class="markdownTableBodyCenter"><em>none</em>   </td><td class="markdownTableBodyLeft">writes the current RAM contents to file <code>ram.txt</code>    </td></tr>
+<tr class="markdownTableRowOdd">
+<td class="markdownTableBodyLeft"><code>quit</code>   </td><td class="markdownTableBodyCenter"><em>none</em>   </td><td class="markdownTableBodyLeft">exits the program.   </td></tr>
+</table>
 <h1><a class="anchor" id="autotoc_md3"></a>
 Documentation with &lt;a href="https://www.doxygen.nl/manual/docblocks.html#pythonblocks" &gt;Doxygen&lt;/a&gt;</h1>
 <ul>
-<li>comments -&gt; documentation </li>
+<li>comments -&gt; documentation</li>
+<li>uses a <code>py_filter.bat</code> file to determine the documentation</li>
+</ul>
+<div class="fragment"><div class="line">doxygen py_filter.bat -a -c %1</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md4"></a>
+Documentation Output</h2>
+<ul>
+<li>under the <code>root/html</code> folder<ul>
+<li><em>html</em> files such as <em>classes.html</em> show documentation and comments </li>
+</ul>
+</li>
 </ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->

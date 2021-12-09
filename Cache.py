@@ -284,7 +284,7 @@ class Cache(object):
                 for i, line in enumerate(self.Contents[setIndex]):
                     if line[0] != "1":
                         validCheck[0] = False
-                        validCheck[1] = i
+                        validCheck[1] = i + 1
                 
                 if not validCheck[0]:
                     # pick the first invalid line
@@ -616,7 +616,7 @@ class Cache(object):
                 if i == 8:
                     print(f"\n0x08:", end="")
                 else:
-                    print(f"\n{str(hex(i)).upper()}:", end="")
+                    print(f"\n{str(hex(i))}:", end="")
             
             print(r, end=" ")
 

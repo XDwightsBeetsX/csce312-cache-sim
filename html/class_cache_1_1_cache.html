@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.9.2"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>My Project: Cache.Cache Class Reference</title>
+<title>CSCE 312 - Kebo - Cache Project - John Gutierrez &amp; Cameron Herring: Cache.Cache Class Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -21,7 +21,7 @@
  <tbody>
  <tr style="height: 56px;">
   <td id="projectalign" style="padding-left: 0.5em;">
-   <div id="projectname">My Project
+   <div id="projectname">CSCE 312 - Kebo - Cache Project - John Gutierrez &amp; Cameron Herring
    </div>
   </td>
  </tr>
@@ -86,6 +86,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a37732b0935b4765fcd3f6f83b333e257"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a79f39aca4ecf7de4d55d46112968d0fb"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_cache_1_1_cache.html#a79f39aca4ecf7de4d55d46112968d0fb">getEmptyContents</a> (self)</td></tr>
 <tr class="separator:a79f39aca4ecf7de4d55d46112968d0fb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a527858d7a0034d74ee140839d97d2013"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_cache_1_1_cache.html#a527858d7a0034d74ee140839d97d2013">setContentsFromRam</a> (self, ramIndex, setIndex, evictionLine)</td></tr>
+<tr class="separator:a527858d7a0034d74ee140839d97d2013"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a81914deadefc5e4b786ecb4269c0e95c"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_cache_1_1_cache.html#a81914deadefc5e4b786ecb4269c0e95c">menu</a> (self)</td></tr>
 <tr class="separator:a81914deadefc5e4b786ecb4269c0e95c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab75d15a1fe78e29ccf82a10d79df507a"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_cache_1_1_cache.html#ab75d15a1fe78e29ccf82a10d79df507a">cache_read</a> (self, binaryCommandString)</td></tr>
@@ -154,7 +156,17 @@ Public Attributes</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><b>Contents</b></td></tr>
 <tr class="separator:ae2de2f517ca41177daa725d58c6e04cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><pre class="fragment">Cache object stores the Cache.Contents
+
+Initialized from a 1-D array of RAM
+
+The size and dimensions of the contents are set by prompts in __init__
+
+Able to perform operations offered in the 'menu()' loop such as cache-read and memory-dump
+
+Tracks the number of CacheHits and CacheMisses
+</pre> </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a37732b0935b4765fcd3f6f83b333e257" name="a37732b0935b4765fcd3f6f83b333e257"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a37732b0935b4765fcd3f6f83b333e257">&#9670;&nbsp;</a></span>__init__()</h2>
 
@@ -328,7 +340,12 @@ Displays intermediate info such as set and tag numbers
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">returns a cleared Cache Contents Lists object with dims B x E x S
+<pre class="fragment">Helper method for initialization and flushing.
+
+returns a cleared lists object with dims (4+B) x E x S
+
+** NOTE: initial tags are set to None, printed as '00'
+this fixes issues with an initial cache-read 0x00 -&gt; hit **
 </pre> 
 </div>
 </div>
@@ -385,7 +402,48 @@ Displays intermediate info such as set and tag numbers
         </tr>
       </table>
 </div><div class="memdoc">
-<pre class="fragment">This is like the game loop or whatever, but is not yet called.
+<pre class="fragment">Command loop takes input command and directs operation to the corresponding class method
+</pre> 
+</div>
+</div>
+<a id="a527858d7a0034d74ee140839d97d2013" name="a527858d7a0034d74ee140839d97d2013"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a527858d7a0034d74ee140839d97d2013">&#9670;&nbsp;</a></span>setContentsFromRam()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def Cache.Cache.setContentsFromRam </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>ramIndex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>setIndex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>evictionLine</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">Helper function to set a Cache line from RAM
 </pre> 
 </div>
 </div>
