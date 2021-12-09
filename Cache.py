@@ -148,13 +148,62 @@ class Cache(object):
         return contents
 
 
-    def setContentsFromRam(self, ramIndex, setIndex, evictionLine):
+    def setContentsFromRam(self, ramIndex, setIndex, evictionLine, targetTagBinStr):
         """
         Helper function to set a Cache line from RAM
-        """ 
+        
+        Sets:
+            valid bit to "1"
+            tag to input tag
+            contents from RAM
+        """
+        # set the tag to the hexadecimal requested tag
+        tagHexString = str(hex(int(targetTagBinStr, 2)))[2:].zfill(2).upper()
+        self.Contents[setIndex][evictionLine-1][3] = tagHexString
+
+        # set the valid bit to "1"
+        self.Contents[setIndex][evictionLine-1][0] = "1"
+
         # set the next self.B cache bytes from RAM
         for i in range(self.B):
             self.Contents[setIndex][evictionLine - 1][4 + i] = self.RAM[ramIndex + i]
+    
+
+    def isCacheHit(self, setIndex, targetTagBinStr, targetOffsetIndex):
+        """
+        Determines if cache Hit/Miss
+        
+        Returns Hit/Miss (bool), value/"-1", lineIndex/-1, dirtyBit/-1
+        """
+        # if one block per set, no need to check tag (0 anyway)
+        if self.E == self.S:
+            return True, self.Contents[setIndex][0][targetOffsetIndex], -1, -1
+        
+        # otherwise, need to find the block line with matching tag
+        targetTagInt = int(hex(int(targetTagBinStr, 2)), 16)
+        block = self.Contents[setIndex]
+        for i, line in enumerate(block):
+            # see if any of the lines in the set block match the tag
+            thisTagRaw = line[3]
+
+            # check if this block has not been set ever
+            if thisTagRaw is None:
+                return False, "-1", -1, -1
+
+            # this block has a tag, see if it matches
+            else:
+                if int(thisTagRaw, 16) == targetTagInt:
+                    # this line in the setIndex matches the tag -> HIT
+                    return True, line[4 + targetOffsetIndex], i, line[1]
+        
+        return False, "-1", -1, -1
+    
+
+    def getAbbrvTagHexStringFromBinString(self, targetTagBinStr):
+        """
+        helper method to do binary string to hex string conversion
+        """
+        return str(hex(int(targetTagBinStr, 2)))[2:].zfill(2).upper()
     
 
     def menu(self):
@@ -230,30 +279,16 @@ class Cache(object):
         offsetIndex = int(binaryCommandString[-self.b:], 2)
 
         # check set associativity
-        setIndex = int(binaryCommandString[self.t:-self.b], 2)
-        if setIndex == "":
-            setIndex = 0
+        s = binaryCommandString[self.t:-self.b]
+        setIndex = 0
+        if s != "":
+            setIndex = int(s, 2)
 
         # tag from command
-        targetTag = binaryCommandString[0:self.t-1]
-
-        # pre-set some vars to update if a cache hit
-        isHit = False
-        value = "-1"
-
-        # determine if cache hit
-        if targetTag != "":
-            block = self.Contents[setIndex]
-            for line in block:
-                # see if any of the lines in the set block match the tag
-                if line[3] == targetTag:
-                    # this line in the setIndex matches the tag -> HIT
-                    value = line[4 + offsetIndex]
-                    isHit = True
-                    break
-        else:
-            targetTag = "00"
+        targetTagBinStr = binaryCommandString[0:self.t]
         
+        # get vars from cacheHit search
+        isHit, value, _lineIndex, _dirtyBit = self.isCacheHit(setIndex, targetTagBinStr, offsetIndex)
 
         # ====================================
         # ============== HIT =================
@@ -261,7 +296,7 @@ class Cache(object):
         if isHit:
             self.CacheHits += 1
             print(f"set:{setIndex}")
-            print(f"tag:{targetTag}")
+            print(f"tag:{self.getAbbrvTagHexStringFromBinString(targetTagBinStr)}")
             print(f"hit:yes")
             print(f"eviction_line:-1")
             print(f"ram_address:-1")
@@ -285,6 +320,7 @@ class Cache(object):
                     if line[0] != "1":
                         validCheck[0] = False
                         validCheck[1] = i + 1
+                        break
                 
                 if not validCheck[0]:
                     # pick the first invalid line
@@ -334,18 +370,16 @@ class Cache(object):
             ramAddress = hex(int(binaryCommandString, 2))
             ramIndex = int(ramAddress, 16) // self.ADDRESS_WIDTH    # can expect this to always be whole integer regardless
 
-            # take the eviction line, set valid bit to 1 and replace Contents with RAM data
-            self.Contents[setIndex][evictionLine-1][0] = "1"
-
-            self.setContentsFromRam(ramIndex, setIndex, evictionLine)
+            # set the valid bit, tag, and data
+            self.setContentsFromRam(ramIndex, setIndex, evictionLine, targetTagBinStr)
 
             value = self.RAM[ramIndex]
             
             print(f"set:{setIndex}")
-            print(f"tag:{targetTag}")
+            print(f"tag:{self.getAbbrvTagHexStringFromBinString(targetTagBinStr)}")
             print(f"hit:no")
             print(f"eviction_line:{evictionLine}")            
-            print(f"ram_address:{ramAddress}")            
+            print(f"ram_address:0x{ramAddress[2:].zfill(2).upper()}")            
             print(f"data:0x{value}")
 
 
@@ -359,34 +393,17 @@ class Cache(object):
         offsetIndex = int(binaryCommandString[-self.b:], 2)
 
         # check set associativity
-        setIndex = int(binaryCommandString[self.t:-self.b], 2)
-        if setIndex == "":
-            setIndex = 0
+        s = binaryCommandString[self.t:-self.b]
+        setIndex = 0
+        if s != "":
+            setIndex = int(s, 2)
 
-        tagString = binaryCommandString[0:self.t-1]
-
-        # fetch the requested address value from RAM
-        ramAddress = hex(int(binaryCommandString, 2))
-        ramIndex = int(ramAddress, 16) // self.ADDRESS_WIDTH    # can expect this to always be whole integer regardless
+        # tag from command
+        targetTagBinStr = binaryCommandString[0:self.t]
         
-        # determine if cache hit
-        isHit = False
-        value = "-1"
-        dirtyBit = "-1"
-        lineIndex = -1
-        
-        # if no bits are allocated to the tagString, sets it to '00'
-        if tagString != "":
-            # find the index of the line in the block to write to
-            block = self.Contents[setIndex]
-            for i, line in enumerate(block):
-                if line[3] == tagString:
-                    value = line[4 + offsetIndex]
-                    dirtyBit = line[2]
-                    lineIndex = i
-                    break
-        else:
-            tagString = "00"
+        # pre-set some vars to update if a cache hit
+        # if there is a hit, safe to use lineIndex, otherwise lineIndex=-1
+        isHit, value, lineIndex, dirtyBit = self.isCacheHit(setIndex, targetTagBinStr, offsetIndex)
 
         
         # =====================================
@@ -410,7 +427,7 @@ class Cache(object):
             
             # print the results
             print(f"set:{setIndex}")
-            print(f"tag:{tagString}")
+            print(f"tag:{self.getAbbrvTagHexStringFromBinString(targetTagBinStr)}")
             print(f"hit:yes")
             print(f"eviction_policy:-1")
             print(f"ram_address:-1")
@@ -479,11 +496,12 @@ class Cache(object):
             
             # WRITE MISS POLICY (BACK)
             if self.WriteMissPolicy == 1:
-                # set the valid bit of eviction line to 1
-                self.Contents[setIndex][evictionLine - 1][0] = "1"
+                # fetch the requested address value from RAM
+                ramAddress = hex(int(binaryCommandString, 2))
+                ramIndex = int(ramAddress, 16) // self.ADDRESS_WIDTH    # can expect this to always be whole integer regardless
 
                 # on a write miss, copy data from RAM to this line of Cache.Contents
-                self.setContentsFromRam(ramIndex, setIndex, evictionLine)
+                self.setContentsFromRam(ramIndex, setIndex, evictionLine, targetTagBinStr)
 
                 # now overrite the copied data with the dataToWrite
                 self.Contents[setIndex][evictionLine - 1][4 + offsetIndex] = dataToWrite
@@ -506,11 +524,11 @@ class Cache(object):
             elif ramAddress == '0x8':
                 ramAddressString = "0x08"
             else:
-                ramAddressString = str(ramAddress)
+                ramAddressString = "0x" + str(ramAddress)[2:].upper()
             
             # print the results
             print(f"set:{setIndex}")
-            print(f"tag:{tagString}")
+            print(f"tag:{self.getAbbrvTagHexStringFromBinString(targetTagBinStr)}")
             print(f"hit:no")
             print(f"eviction_line:{evictionLine}")
             print(f"ram_address:{ramAddressString}")
@@ -588,7 +606,7 @@ class Cache(object):
         with open("cache.txt", 'w') as cacheFile:
             for s in range(self.S):
                 for e in range(self.E):
-                    for i in range(4, self.B):
+                    for i in range(4, 4 + self.B):
                         cacheValue = self.Contents[s][e][i]
                         if cacheValue == None:
                             cacheValue = "00"
@@ -607,18 +625,13 @@ class Cache(object):
         print("memory_content:")
         print("address:data")
 
-        firstLine = True
-        for i, r in enumerate(self.RAM):
-            if firstLine:
-                print(f"0x00:", end="")
-                firstLine = False
-            elif i % self.ADDRESS_WIDTH == 0:
-                if i == 8:
-                    print(f"\n0x08:", end="")
-                else:
-                    print(f"\n{str(hex(i))}:", end="")
+        for line in range(len(self.RAM)//self.ADDRESS_WIDTH):
+            print(f"0x{str(hex(line*8))[2:].zfill(2).upper()}:", end="")
             
-            print(r, end=" ")
+            for i in range(self.ADDRESS_WIDTH):
+                print(self.RAM[line*8 + i], end=" ")
+            
+            print()
 
 
     def memory_dump(self):
