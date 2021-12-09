@@ -600,7 +600,7 @@ class Cache(object):
         with open("cache.txt", 'w') as cacheFile:
             for s in range(self.S):
                 for e in range(self.E):
-                    for i in range(4, self.B):
+                    for i in range(4, 4 + self.B):
                         cacheValue = self.Contents[s][e][i]
                         if cacheValue == None:
                             cacheValue = "00"
