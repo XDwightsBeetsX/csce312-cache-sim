@@ -626,9 +626,11 @@ class Cache(object):
         print("address:data")
 
         for line in range(len(self.RAM)//self.ADDRESS_WIDTH):
-            print(f"0x{str(hex(line))[2:].zfill(2).upper()}:", end="")
+            print(f"0x{str(hex(line*8))[2:].zfill(2).upper()}:", end="")
+            
             for i in range(self.ADDRESS_WIDTH):
                 print(self.RAM[line*8 + i], end=" ")
+            
             print()
 
 
